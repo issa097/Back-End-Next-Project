@@ -1,6 +1,7 @@
 const User = require("../Module/User.js")
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const key = "issa"
 require("dotenv").config();
 
 const newUser = async (req, res) => {
@@ -25,20 +26,23 @@ const login = async (req, res) => {
     try {
         const { email, password } = req.body
         const existUser = await User.getEmail(email);
+        // console.log(existUser)
         if (existUser.rows.length > 0) {
             const user = existUser.rows[0]
-            console.log(user)
+            console.log("user")
             const hashedpassword = await bcrypt.compare(password, user.password)
 
 
             if (!hashedpassword) {
                 return res.status(400).json({ message: "Invalid password" });
+            } else {
+                const Token = jwt.sign({
+                    user_id: user.user_id
+                }, key)
+                console.log(Token)
+                return res.status(200).json({ username: user.username, email: user.email, Token: Token });
             }
-            const Token = jwt.sign({
-                user_id: user.user_id
-            }, process.env.KEY)
-            return res.status(200).json
-                ({ username: user.username, email: user.email, Token: Token });
+
 
         }
     } catch (error) {
